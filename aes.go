@@ -19,6 +19,11 @@ const (
 	AES256
 )
 
+// NewAesKey create a aes key according to the give AesKeyType,
+// Supported:
+//   - AES128
+//   - AES192
+//   - AES256
 func NewAesKey(t AesKeyType) ([]byte, error) {
 	var bLen int32
 	switch t {
@@ -39,6 +44,7 @@ func NewAesKey(t AesKeyType) ([]byte, error) {
 	return b, nil
 }
 
+// Encrypt takes the key and used it to encrypt the given plain text.
 func Encrypt(key []byte, plainText []byte) ([]byte, error) {
 	block, err := aes.NewCipher(key)
 	if err != nil {
@@ -64,6 +70,7 @@ func Encrypt(key []byte, plainText []byte) ([]byte, error) {
 	mode := cipher.NewCBCEncrypter(block, iv)
 	mode.CryptBlocks(payload, plainText)
 
+	// we use Encrypt-then-MAC
 	hash := hmac.New(sha256.New, key)
 	hash.Write(payload)
 	copy(mac, hash.Sum(nil))
