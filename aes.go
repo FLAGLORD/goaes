@@ -45,6 +45,8 @@ func NewAesKey(t AesKeyType) ([]byte, error) {
 }
 
 // Encrypt takes the key and used it to encrypt the given plain text.
+// The result is actually:
+// IV + HMAC + CipherText
 func Encrypt(key []byte, plainText []byte) ([]byte, error) {
 	block, err := aes.NewCipher(key)
 	if err != nil {
@@ -71,6 +73,7 @@ func Encrypt(key []byte, plainText []byte) ([]byte, error) {
 	mode.CryptBlocks(payload, plainText)
 
 	// we use Encrypt-then-MAC
+	// https://crypto.stackexchange.com/questions/202/should-we-mac-then-encrypt-or-encrypt-then-mac
 	hash := hmac.New(sha256.New, key)
 	hash.Write(payload)
 	copy(mac, hash.Sum(nil))
@@ -79,8 +82,6 @@ func Encrypt(key []byte, plainText []byte) ([]byte, error) {
 }
 
 // Decrypt takes a key and use it to decrypt the given cipherText, finally returns the plain text.
-// https://crypto.stackexchange.com/questions/202/should-we-mac-then-encrypt-or-encrypt-then-mac
-// https://github.com/qubies/simpleCrypto/blob/master/simpleCrypto.go
 func Decrypt(key []byte, cipherText []byte) ([]byte, error) {
 	block, err := aes.NewCipher(key)
 	if err != nil {
@@ -151,7 +152,7 @@ func PKCS7Pad(data []byte, blockSize int) ([]byte, error) {
 	//			methods for larger k are an open issue for further study.
 	//
 
-	// calculate the padding length, ranging from 0 to blockSize-1
+	// calculate the padding length, ranging from 1 to blockSize
 	paddingLen := blockSize - len(data)%blockSize
 
 	// build the padding text
