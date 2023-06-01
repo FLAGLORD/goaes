@@ -34,3 +34,6 @@ plainText, err := Decrypt(key, cipherText)
 
 
 You can also copy code in `aes.go` to your file *as it will not import new dependency*.
+
+## Reference
+[What is block cipher](https://www.techtarget.com/searchsecurity/definition/block-cipher)
